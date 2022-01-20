@@ -3,7 +3,9 @@ const getUrl = (req) => req.protocol + "://" + req.get("host") + req.originalUrl
 
 module.exports = {
     all: (req, res) => {
-        db.Category.findAll()
+        db.Category.findAll({
+            include: [{association: 'posts'}]
+        })
         .then(result => {
             res.status(200).json({
                 meta: {
@@ -25,7 +27,9 @@ module.exports = {
                 },
             });
         } else {
-            db.Category.findByPk(req.params.id)
+            db.Category.findByPk(req.params.id, {
+                include: [{association: 'posts'}]
+            })
             .then(result => {
                 if(result){
                     return res.status(200).json({

@@ -6,6 +6,7 @@ module.exports = {
     db.Post.findAll({
         attributes: ["id", "title", "image", "category", "created_at"],
         order: [["created_at", "DESC"]],
+        include: [{association: 'categories'}]
     })
     .then((result) => {
         if (result !== 0) {
@@ -36,7 +37,9 @@ module.exports = {
                 },
             });
         } else {
-            db.Post.findByPk(req.params.id)
+            db.Post.findByPk(req.params.id, {
+                include: [{association: 'categories'}]
+            })
             .then((result) => {
                 if (result) {
                     return res.status(200).json({
@@ -74,25 +77,31 @@ module.exports = {
                 msg: "Post agregado",
                 },
                 data: post,
-                authData,
             });
         })
         .catch((error) => res.status(400).send(error));
     },
     edit: (req, res) => {
     const { title, content, image, category, created_at } = req.body;
-    db.Post.update(
-        { title, content, image, category, created_at },
-        { where: { id: req.params.id }}
-    )
-    .then(post => {
-        res.status(201).json({
-            msg: "Post actualizado",
-            post,
-            authData
-        })
+    db.Post.findByPk(req.params.id)
+    .then(result => {
+        if (result) {
+            db.Post.update(
+                { title, content, image, category, created_at },
+                { where: { id: req.params.id }}
+            )
+            .then((post) => {
+                res.status(201).json({
+                    msg: "Post actualizado",
+                })
+            })
+        }else{
+            return res.status(400).json({
+                msg: "Sin cambios, ese id no existe ",
+            });
+        }
     })
-    .catch(error => res.status(400).send(error))
+    .catch((error) => res.status(400).send(error));
     },
     destroy: (req, res) => {
         db.Post.destroy({

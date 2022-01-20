@@ -33,5 +33,11 @@ module.exports = (sequelize, dataTypes) => {
     }
     const Post = sequelize.define(alias, cols, config);
     
+    Post.associate = function (models) {
+        Post.belongsTo(models.Category, {
+            as: "categories",
+            foreignKey: "category",
+        });
+    };
     return Post;
 }
